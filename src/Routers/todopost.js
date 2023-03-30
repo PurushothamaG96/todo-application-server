@@ -1,7 +1,7 @@
 const express = require("express")
 const router = express.Router()
 const {validationResult, body}  = require("express-validator")
-const { find } = require("../Models/todoModel")
+
 
 
 //models import
@@ -30,6 +30,7 @@ router.post("/todoposts", body("item").isString(),
             priority_level,
             due_date, 
             starred,
+            isCompleted:true,
             userId:req.userId
         })
         return res.status(201).json({
@@ -51,9 +52,22 @@ router.post("/todoposts", body("item").isString(),
 // })
 router.put("/todoposts/:id",async(req, res)=>{
     try{
-        console.log(req.body)
+        let updates = req.body
+        const data = await todoModel.updateOne({_id:req.params.id}, {starred:updates.starred})
+        res.status(201).json(data)
+    }catch(e){
+        return res.status(500).json(e)
+    }
+})
+router.put("/todoposts/updates/:id",async(req, res)=>{
+    try{
+        let {item, starred, priority_level, isCompleted, due_date} = req.body
         const data = await todoModel.updateOne({_id:req.params.id}, {
-            starred : req.body.starred
+            item,
+            starred,
+            priority_level,
+            isCompleted,
+            due_date 
         })
         res.status(201).json(data)
     }catch(e){
@@ -63,10 +77,10 @@ router.put("/todoposts/:id",async(req, res)=>{
 
 router.get("/todoposts",async(req, res)=>{
     try{
-        console.log(req.query)
+        
         let comp = req.query.iscompleted
 
-        if(req.query.iscompleted==="All") comp = ["true", "false"]
+        if(req.query.iscompleted==="All") comp = [true, false]
         else comp=[req.query.iscompleted]
         let ascDec = parseInt(req.query.nearDate)
 
@@ -75,29 +89,29 @@ router.get("/todoposts",async(req, res)=>{
 
         switch(req.query.dueDate){
             case "Today":
-            data = await todoModel.find({$and:[{userId:req.userId}, {due_date:{$eq:new Date()}}]})
+            data = await todoModel.find({$and:[{userId:req.userId}, {$and:[{due_date:{$gte:new Date(new Date().getTime()-(24*60*60*1000))}},{due_date:{$lt:new Date(new Date().getTime()+(24*60*60*1000))}}]}]})
             .where("isCompleted")
-            .in([...comp])
+            .in(comp)
             .sort({due_date:ascDec})
              return res.status(200).json(data)
              case "Upcomings":
             data = await todoModel.find({$and:[{userId:req.userId}, {due_date:{$gt:new Date()}}]})
             .where("isCompleted")
-            .in([...comp])
+            .in(comp)
             .sort({due_date:ascDec})
              return res.status(200).json(data)
 
              case "Expired":
             data = await todoModel.find({$and:[{userId:req.userId}, {due_date:{$lt:new Date()}}]})
             .where("isCompleted")
-            .in([...comp])
+            .in(comp)
             .sort({due_date:ascDec})
              return res.status(200).json(data)
 
              default :
              data = await todoModel.find({userId:req.userId})
              .where("isCompleted")
-            .in([...comp])
+            .in(comp)
             .sort({due_date:ascDec})
              res.status(200).json(data) 
              return 

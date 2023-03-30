@@ -7,7 +7,7 @@ const todoSchema = new Schema({
     priority_level:{type:String, required:true},
     due_date:{type:Date, required:true},
     starred:{type:String, required:true},
-    isCompleted:{type:Boolean, default:false},
+    isCompleted:{type:Boolean, required:true},
     userId:{type:objectId, ref:"users"}
 }, {timestamps:true})
 

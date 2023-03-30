@@ -86,6 +86,30 @@ app.use('/app/v1/todoposts/:id', (req, res, next)=>{
     }
 })
 
+app.use('/app/v1/todoposts/updates/:id', (req, res, next)=>{
+    try{
+        const token =req.headers.authorization;
+        jwt.verify(token, process.env.JWT_SECRET_KEY,(err, result)=>{
+            if(err){
+                return res.status(401).json({
+                    status:"Failure",
+                    message:"Denied Authorization"
+                })
+            }
+            else{
+                req.userId = result.data;
+                next();
+            }
+        })
+
+    }catch(e){
+        res.status(403).json({
+            status:"error",
+            message:e.message
+        })
+    }
+})
+
 ///midle ware calls
 app.use("/app/v1", register)
 app.use("/app/v1", login)
