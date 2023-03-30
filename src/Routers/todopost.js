@@ -79,25 +79,33 @@ router.get("/todoposts",async(req, res)=>{
     try{
         
         let comp = req.query.iscompleted
-
+        //quer on completed task
         if(req.query.iscompleted==="All") comp = [true, false]
         else comp=[req.query.iscompleted]
         let ascDec = parseInt(req.query.nearDate)
 
+        //quer on starred
+        let starActive = req.query.star
+        if(starActive==="All") starActive = ["on", "false"] 
+
+
+
         let data;
-
-
         switch(req.query.dueDate){
             case "Today":
             data = await todoModel.find({$and:[{userId:req.userId}, {$and:[{due_date:{$gte:new Date(new Date().getTime()-(24*60*60*1000))}},{due_date:{$lt:new Date(new Date().getTime()+(24*60*60*1000))}}]}]})
             .where("isCompleted")
             .in(comp)
+            .where("starred")
+            .in(starActive)
             .sort({due_date:ascDec})
              return res.status(200).json(data)
              case "Upcomings":
             data = await todoModel.find({$and:[{userId:req.userId}, {due_date:{$gt:new Date()}}]})
             .where("isCompleted")
             .in(comp)
+            .where("starred")
+            .in(starActive)
             .sort({due_date:ascDec})
              return res.status(200).json(data)
 
@@ -105,6 +113,8 @@ router.get("/todoposts",async(req, res)=>{
             data = await todoModel.find({$and:[{userId:req.userId}, {due_date:{$lt:new Date()}}]})
             .where("isCompleted")
             .in(comp)
+            .where("starred")
+            .in(starActive)
             .sort({due_date:ascDec})
              return res.status(200).json(data)
 
@@ -112,6 +122,8 @@ router.get("/todoposts",async(req, res)=>{
              data = await todoModel.find({userId:req.userId})
              .where("isCompleted")
             .in(comp)
+            .where("starred")
+            .in(starActive)
             .sort({due_date:ascDec})
              res.status(200).json(data) 
              return 
