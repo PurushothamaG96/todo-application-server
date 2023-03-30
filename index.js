@@ -30,22 +30,24 @@ main()
 
 
 //middle-ware
-app.use(cors({
-    origin:"*"
-}))
+app.use(cors())
 
 //jwt token verification
 app.use('/app/v1/todoposts', (req, res, next)=>{
     try{
         const token =req.headers.authorization;
+        
         jwt.verify(token, process.env.JWT_SECRET_KEY,(err, result)=>{
             if(err){
+                
                 return res.status(401).json({
                     status:"Failure",
                     message:"Denied Authorization"
+                    
                 })
             }
             else{
+                
                 req.userId = result.data;
                 next();
             }

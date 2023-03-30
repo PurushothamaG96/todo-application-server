@@ -5,8 +5,9 @@ const  objectId= require("mongoose").ObjectId
 const todoSchema = new Schema({
     item:{type:String, required:true},
     priority_level:{type:String, required:true},
-    due_date:{type:String, required:true},
+    due_date:{type:Date, required:true},
     starred:{type:String, required:true},
+    isCompleted:{type:Boolean, default:false},
     userId:{type:objectId, ref:"users"}
 }, {timestamps:true})
 
