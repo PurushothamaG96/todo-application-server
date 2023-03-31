@@ -30,7 +30,7 @@ router.post("/todoposts", body("item").isString(),
             priority_level,
             due_date, 
             starred,
-            isCompleted:true,
+            isCompleted:false,
             userId:req.userId
         })
         return res.status(201).json({
